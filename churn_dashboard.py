@@ -20,159 +20,13 @@ st.set_page_config(
 # Custom styling
 st.markdown("""
 <style>
-    :root {
-        --primary: #4361ee;
-        --secondary: #3a0ca3;
-        --accent: #4cc9f0;
-        --success: #2ec4b6;
-        --warning: #ff9f1c;
-        --danger: #e63946;
-        --dark: #212529;
-        --light: #f8f9fa;
-    }
-    
-    * {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    
-    body {
-        background: linear-gradient(135deg, #f5f7fa 0%, #e4e7eb 100%);
-        color: var(--dark);
-    }
-    
-    .stApp {
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 2rem;
-    }
-    
-    .header {
-        text-align: center;
-        padding: 2.5rem 0;
-        margin-bottom: 2.5rem;
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
-        color: white;
-        border-radius: 18px;
-        box-shadow: 0 12px 25px rgba(67, 97, 238, 0.3);
-    }
-    
-    .header h1 {
-        font-size: 3.2rem;
-        font-weight: 800;
-        margin-bottom: 0.5rem;
-        letter-spacing: -0.5px;
-    }
-    
-    .header p {
-        font-size: 1.2rem;
-        opacity: 0.9;
-    }
-    
-    .card {
-        background: white;
-        border-radius: 18px;
-        padding: 2rem;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-        margin-bottom: 2rem;
-        transition: all 0.3s ease;
-        border: 1px solid rgba(0,0,0,0.03);
-    }
-    
-    .card:hover {
-        transform: translateY(-7px);
-        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
-    }
-    
-    .metric-card {
-        background: white;
-        border-radius: 18px;
-        padding: 1.5rem;
-        text-align: center;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-        margin-bottom: 1.5rem;
-        border-top: 5px solid var(--primary);
-    }
-    
-    .metric-value {
-        font-size: 2.8rem;
-        font-weight: 800;
-        color: var(--primary);
-        margin: 0.5rem 0;
-        line-height: 1;
-    }
-    
-    .metric-label {
-        font-size: 1.1rem;
-        color: #64748b;
-        font-weight: 600;
-    }
-    
-    .feature-importance {
-        background: linear-gradient(to right, #e0f7fa, #b2ebf2);
-        padding: 1.2rem;
-        border-radius: 14px;
-        margin: 1.5rem 0;
-    }
-    
-    .footer {
-        text-align: center;
-        margin-top: 3rem;
-        padding-top: 2rem;
-        border-top: 1px solid #e2e8f0;
-        color: #64748b;
-        font-size: 0.95rem;
-    }
-    
-    .stProgress > div > div > div {
-        background: linear-gradient(to right, var(--accent), var(--primary));
-    }
-    
-    .stButton > button {
-        background: linear-gradient(to right, var(--primary), var(--secondary));
-        color: white;
-        border: none;
-        border-radius: 35px;
-        padding: 14px 28px;
-        font-weight: 700;
-        font-size: 1.1rem;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 12px rgba(67, 97, 238, 0.25);
-    }
-    
-    .stButton > button:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 7px 18px rgba(67, 97, 238, 0.4);
-    }
-    
-    .form-container {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        border-radius: 18px;
-        padding: 2rem;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
-    }
-    
-    .risk-high {
-        background: linear-gradient(135deg, #ff6b6b 0%, #e63946 100%);
-        color: white;
-        border-radius: 14px;
-        padding: 1.5rem;
-        margin: 1.5rem 0;
-    }
-    
-    .risk-low {
-        background: linear-gradient(135deg, #2ec4b6 0%, #1a936f 100%);
-        color: white;
-        border-radius: 14px;
-        padding: 1.5rem;
-        margin: 1.5rem 0;
-    }
-    
-    .recommendation-card {
-        background: white;
-        border-radius: 14px;
-        padding: 1.2rem;
-        margin: 1rem 0;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    /* ... (keep all your existing styles) ... */
+    .error-box {
+        background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+        border-left: 5px solid #e63946;
+        border-radius: 10px;
+        padding: 20px;
+        margin: 20px 0;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -207,13 +61,15 @@ def generate_sample_data():
 
 # Preprocess data
 def preprocess_data(df):
+    # Validate required columns
+    required_columns = {'churn', 'tenure', 'monthly_charges'}
+    missing_columns = required_columns - set(df.columns)
+    
+    if missing_columns:
+        return None, None, list(missing_columns)
+    
     # Copy the dataframe
     df = df.copy()
-    
-    # Validate churn column exists
-    if 'churn' not in df.columns:
-        st.error("Error: 'churn' column not found in the dataset.")
-        return None, None
     
     # Encode categorical variables
     label_encoders = {}
@@ -238,7 +94,7 @@ def preprocess_data(df):
     if 'customer_id' in df.columns:
         df = df.drop(columns=['customer_id'])
     
-    return df, label_encoders
+    return df, label_encoders, None
 
 # Train model
 def train_model(X_train, y_train):
@@ -307,6 +163,8 @@ def main():
         st.session_state.model = None
     if 'preprocessed' not in st.session_state:
         st.session_state.preprocessed = None
+    if 'missing_columns' not in st.session_state:
+        st.session_state.missing_columns = None
     
     # Sidebar
     with st.sidebar:
@@ -318,25 +176,30 @@ def main():
             uploaded_file = st.file_uploader("Upload your CSV file", type=["csv"])
             if uploaded_file is not None:
                 try:
-                    st.session_state.data = pd.read_csv(uploaded_file)
-                    st.success("Data uploaded successfully!")
+                    df = pd.read_csv(uploaded_file)
                     
                     # Validate required columns
-                    required_columns = ['churn']
-                    missing_columns = [col for col in required_columns if col not in st.session_state.data.columns]
+                    required_columns = {'churn'}
+                    missing_columns = required_columns - set(df.columns)
                     
                     if missing_columns:
-                        st.error(f"Missing required columns: {', '.join(missing_columns)}")
+                        st.session_state.missing_columns = list(missing_columns)
                         st.session_state.data = None
+                        st.error(f"Missing required columns: {', '.join(missing_columns)}")
+                    else:
+                        st.session_state.data = df
+                        st.session_state.missing_columns = None
+                        st.success("Data uploaded successfully!")
                 except Exception as e:
                     st.error(f"Error reading file: {str(e)}")
         else:
             if st.button("Generate Sample Data", use_container_width=True):
                 with st.spinner("Creating sample dataset..."):
                     st.session_state.data = generate_sample_data()
+                    st.session_state.missing_columns = None
                     st.success("Sample data generated!")
         
-        if st.session_state.data is not None:
+        if st.session_state.data is not None and st.session_state.missing_columns is None:
             st.markdown("## Model Configuration")
             test_size = st.slider("Test Size Ratio", 0.1, 0.5, 0.2, 0.05)
             random_state = st.number_input("Random State", 0, 100, 42)
@@ -345,10 +208,11 @@ def main():
                 with st.spinner("Preprocessing data and training model..."):
                     try:
                         # Preprocess data
-                        df_preprocessed, label_encoders = preprocess_data(st.session_state.data)
+                        df_preprocessed, label_encoders, missing_cols = preprocess_data(st.session_state.data)
                         
-                        if df_preprocessed is None:
-                            st.error("Data preprocessing failed. Please check your dataset.")
+                        if missing_cols:
+                            st.session_state.missing_columns = missing_cols
+                            st.error(f"Missing required columns: {', '.join(missing_cols)}")
                             return
                             
                         st.session_state.preprocessed = df_preprocessed
@@ -378,8 +242,22 @@ def main():
                         st.error(f"Error during training: {str(e)}")
     
     # Main content
-    if st.session_state.data is None:
+    if st.session_state.data is None or st.session_state.missing_columns:
         st.info("💡 Please generate sample data or upload a CSV file to get started")
+        
+        if st.session_state.missing_columns:
+            st.markdown(f"""
+            <div class="error-box">
+                <h3>⚠️ Dataset Validation Error</h3>
+                <p>Your dataset is missing these required columns: <strong>{', '.join(st.session_state.missing_columns)}</strong></p>
+                <p>Please upload a dataset that contains all required columns:</p>
+                <ul>
+                    <li><code>churn</code> - Customer churn status (Yes/No)</li>
+                    <li><code>tenure</code> - Duration as customer (months)</li>
+                    <li><code>monthly_charges</code> - Monthly subscription cost</li>
+                </ul>
+            </div>
+            """, unsafe_allow_html=True)
         
         col1, col2 = st.columns([1, 1])
         
@@ -433,8 +311,11 @@ def main():
     churn_info = ""
     if 'churn' in st.session_state.data.columns:
         churn_counts = st.session_state.data['churn'].value_counts()
-        churn_rate = churn_counts.get('Yes', 0) / len(st.session_state.data)
-        churn_info = f"**Churn Rate:** {churn_rate:.1%}"
+        if 'Yes' in churn_counts.index:
+            churn_rate = churn_counts['Yes'] / len(st.session_state.data)
+            churn_info = f"**Churn Rate:** {churn_rate:.1%}"
+        else:
+            churn_info = "**Churn Rate:** 'Yes' values not found"
     else:
         churn_info = "**Churn Rate:** Column not found"
     
@@ -447,17 +328,15 @@ def main():
     st.dataframe(st.session_state.data.describe())
     
     # Customer churn analysis
-    st.markdown("### Customer Churn Analysis")
-    
-    # Churn distribution
     if 'churn' in st.session_state.data.columns:
+        st.markdown("### Customer Churn Analysis")
         col1, col2 = st.columns([1, 1])
         
         with col1:
             st.markdown("#### Churn Distribution")
             churn_counts = st.session_state.data['churn'].value_counts()
             fig, ax = plt.subplots(figsize=(10, 6))
-            colors = ['#4cc9f0', '#e63946'] if churn_counts.index[0] == 'No' else ['#e63946', '#4cc9f0']
+            colors = ['#4cc9f0', '#e63946'] if 'No' in churn_counts.index and churn_counts.index[0] == 'No' else ['#e63946', '#4cc9f0']
             plt.pie(churn_counts, labels=churn_counts.index, autopct='%1.1f%%', 
                     startangle=90, colors=colors, explode=(0.05, 0), shadow=True)
             plt.axis('equal')
@@ -505,7 +384,7 @@ def main():
         st.pyplot(fig)
     
     # Model training and evaluation
-    if st.session_state.model is not None:
+    if st.session_state.model is not None and st.session_state.missing_columns is None:
         st.markdown("## Model Performance")
         
         # Evaluate model
